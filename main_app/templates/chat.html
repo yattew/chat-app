@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.4.0/socket.io.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+    body {
+        width: 100vw;
+        height: 100vh;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        justify-content: space-between;
+        flex-direction: column;
+        font-family: 'Roboto', sans-serif;
+    }
+
+    .bottom-rect {
+        height: 90vh;
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        /* width:100%; */
+        
+    }
+
+    #main {
+        position: relative;
+        background-color: rgb(219, 217, 217);
+        background-color: rgb(206, 222, 238);
+        width: 80%;
+        height: 90%;
+        margin: 10px;
+        border-radius: 1rem;
+        box-shadow: 5px 10px 8px rgba(0, 0, 0, 0.336);
+        display: flex;
+        justify-content: space-evenly;
+        align-items: center;
+        overflow:hidden;
+    }
+
+    #left {
+        position: relative;
+        background-color: white;
+        height: 92%;
+        width: 30%;
+        border-radius: 1rem;
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+        align-items: center;
+    }
+
+    #right {
+        height: 92%;
+        width: 65%;
+        padding-left: 0px;
+        padding-right: 0px;
+        border-radius: 1rem;
+        background-color: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .contact-container {
+        position: relative;
+        width: 90%;
+        height: 85%;
+
+
+    }
+
+    .contact {
+        width: 100%;
+        height: 50px;
+        font-size: 30px;
+        padding-left: 10px;
+        /* border-bottom-style: solid;
+        border-bottom-width: 2px; */
+        border-radius: 1rem;
+        border-color: grey;
+        transition: background-color 25ms linear, transform 200ms ease;
+    }
+
+    .contact:hover {
+        transform: scale(1.05);
+        cursor: pointer;
+    }
+
+    .contact:active {
+        background-color: rgba(128, 128, 128, 0.479);
+    }
+
+    .contact-msg {
+        position: relative;
+        left: 300px;
+        top: -25px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: blue;
+    }
+
+    .send-message {
+        width: 100%;
+        height: 9%;
+        border-radius: 1rem;
+        border-top-left-radius: 0px;
+        border-top-right-radius: 0px;
+        border-width: 0px;
+        border-top: rgba(68, 68, 68, 0.568) 1px solid;
+        background-color: rgb(255, 255, 255);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0px 5px;
+    }
+
+    .send-button {
+        background-color: rgba(164, 164, 255, 0);
+        height: 70%;
+        /* height: auto; */
+        transition: background-color 100ms ease, transform 200ms ease;
+
+    }
+
+    .send-button:hover {
+        transform: scale(1.1);
+        cursor: pointer;
+    }
+
+    .message-container {
+        height: 87%;
+        width: 100%;
+        overflow: auto;
+        padding: 0.5rem;
+    }
+
+    .message-input {
+        height: 100%;
+        width: 80%;
+        border-width: 0px;
+        background-color: rgb(255, 255, 255);
+        border-radius: 1rem;
+    }
+
+    .message-input:focus {
+        outline: 0px;
+    }
+
+    .message-sent-container {
+        display: flex;
+        flex-direction: row-reverse;
+    }
+
+    .message-received-container {
+        display: flex;
+
+    }
+
+    .message-sent,
+    .message-received {
+        margin: 10px;
+        /* height: auto; */
+        /* overflow:auto; */
+        padding: 0.5rem;
+        background-color: rgb(190, 190, 190);
+        background-color: rgb(198, 218, 240);
+        border-radius: 5px;
+        width: auto;
+        max-width: 60%;
+        height: auto;
+        word-break: break-all;
+    }
+
+    .message-received {
+        border-bottom-left-radius: 0px;
+    }
+
+    .message-sent {
+        margin-left: 0px;
+        border-bottom-right-radius: 0px;
+    }
+
+    .enter-contact {
+        height: 10%;
+        width: 90%;
+        border-radius: 5px;
+        border-top-left-radius: 10px;
+        background-color: white;
+        display: flex;
+        justify-content: space-between;
+
+    }
+
+    .contact-button {
+        background-color: rgba(164, 164, 255, 0);
+        width: 10%;
+        /* height: auto; */
+        object-fit: contain;
+    }
+
+    .contact-button:hover {
+        cursor: pointer;
+        transform: scale(1.1);
+        transition: background-color 100ms ease, transform 200ms ease;
+    }
+
+    .contact-input {
+        width: 80%;
+        height: 80%;
+        border-width: 0px;
+        border-bottom-width: 1px;
+    }
+
+    .contact-input:focus {
+        outline: 0px;
+
+    }
+
+    .current-name {
+        width: 100%;
+        height: 10%;
+        border-top-left-radius: 1rem;
+        border-top-right-radius: 1rem;
+        border-bottom: rgb(105, 105, 105) 1px solid;
+        display: flex;
+        padding-left: 1rem;
+        justify-content: flex-start;
+        align-items: flex-end;
+    }
+
+    .current-name>div {
+        font-size: 1.5rem;
+    }
+
+    .responsive-container {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        justify-content: space-evenly;
+        align-items: center;
+    }
+    .navbar-brand{
+        height:7vh;
+    }
+    .navbar-brand.items{
+        display:none;
+    }
+    .navbar-brand.heading{
+            display:block;
+    } 
+    @media (max-width: 1000px) {
+        #main {
+            width: 95%;
+            height: 90%;
+        }
+    }
+
+    @media (max-width: 850px) and (max-height: 600px) {
+        body {
+            font-size: small;
+        }
+
+        /* #main{
+            height:92%;
+        } */
+        .current-name>div {
+            font-size: 1rem;
+        }
+
+        .contact {
+            font-size: 1rem;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .bottom-rect{
+            align-items: flex-start;
+        }
+        #main {
+            overflow: hidden;
+            display: block;
+            height: 80vh;
+        }
+
+        .responsive-container {
+            width: 200vw;
+            justify-content: space-between;
+            padding:0 5vw;
+        }
+
+        #left {
+            width: 85vw;
+            /* margin-left: 5vw; */
+        }
+
+        #right {
+            width: 85vw;
+            /* padding:0 1rem; */
+            /* margin-right: 5vw; */
+        }
+        .navbar-brand.items{
+            display:block;
+        }
+        .navbar-brand.heading{
+            display:none;
+        }
+        .send-button{
+
+        }
+    }
+</style>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand heading" href="{{ url_for('core.index') }}">Home</a>
+        <img class="navbar-brand items" id="contact-window" src="{{ url_for('static', filename='contacts.png') }}">
+        <img class="navbar-brand items" id="chat-window" src="{{ url_for('static', filename='chat.png') }}">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                {% if current_user.is_anonymous %}
+                <li class="nav-item active"><a class="navbar-brand" href="{{ url_for('user.signup') }}">signUp</a></li>
+                <li class="nav-item active"><a class="navbar-brand" href="{{ url_for('user.signin') }}">SignIn</a></li>
+                {% else %}
+                <li class="nav-item active"><a class="navbar-brand" href="{{ url_for('user.signout') }}">SignOut</a>
+                </li>
+                <li class="nav-item active"><a class="navbar-brand" href="{{ url_for('chat.chat_view') }}">Chat</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+    <div class="bottom-rect">
+        <div id="main">
+            <div class="responsive-container">
+                <div id="left">
+                    <div class='enter-contact'>
+                        <input type="text" class='contact-input' id="contact-input" placeholder="Enter a username">
+                        <img src="{{url_for('static', filename='search.png')}}" class="contact-button"
+                            id="send-contact-button">
+                    </div>
+                    <div class="contact-container" id="contact-container">
+
+                    </div>
+                </div>
+                <div id="right">
+                    <div class="current-name">
+                        <div>
+
+                        </div>
+                    </div>
+                    <div class="message-container" id="message-container">
+                    </div>
+                    <div class="send-message">
+                        <input type="text" class="message-input" id="message-input" placeholder="Type a message">
+                        <!-- <img src="url_for(static, filename='search.png')" > -->
+                        <img src="{{url_for('static', filename='send.png')}}" class="send-button" id="send-button">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+
+            //------------------------------------------------------
+            var to_username = '';
+            var private_socket = io.connect(`${window.location.host}/private`);
+            //------------------------------------------------------
+
+
+            function scroll() {
+                var element = document.querySelector(".message-container");
+                element.scrollTop = element.scrollHeight;
+            }
+            let ct = 0;
+            var message_handler = {
+                show_message: function (msg, to_from) {
+                    var class_name = '';
+                    if (to_from == 0) class_name = 'message-sent';
+                    else class_name = 'message-received';
+                    if (msg != '') {
+                        $('.message-container').append(`<div class="${class_name}-container"><div class="${class_name}">${msg}</div></div>`);
+                        scroll();
+                    }
+                }
+                ,
+                get_old_messages: function () {
+                    return $.ajax({
+                        data: {
+                            to_username: to_username
+                        },
+                        type: 'POST',
+                        url: '/messages_ajax'
+                    })
+                }
+                ,
+                load_old_messages: function () {
+                    $.when(message_handler.get_old_messages().done(function (data) {
+                        if (data != 'false') {
+                            $('.message-container').empty();
+                            var texts = data['texts'];
+                            for (let i = 0; i < texts.length; i++) {
+                                message_handler.show_message(texts[i][0], texts[i][1]);
+                            }
+                        }
+                        scroll();
+
+                    }))
+
+                }
+            }
+
+            var contact_handler = {
+                add_contact: function (contact) {
+                    $('#contact-container').append(`<div class="contact">${contact}</div>`);
+                    $(`.contact:contains(${contact})`).click(function () {
+                        var element = $(`.contact:contains(${contact})`);
+                        to_username = contact;
+                        $(".received-container").empty();
+                        $(".sent-container").empty();
+                        $(".current-name").children().text(to_username[0].toUpperCase() + to_username.slice(1, to_username.length));
+                        message_handler.load_old_messages();
+                        var child = element.children('.contact-msg');
+                        child.remove();
+                        element = document.querySelector('#main');
+                        element.scrollBy({
+                            left:element.scrollWidth,
+                            behavior:'smooth'
+                        });
+                    })
+                }
+                ,
+                check_contact: function (contact) {
+                    return $.ajax({
+                        data: {
+                            username: $('#contact-input').val()
+                        },
+                        type: 'POST',
+                        url: '/username_ajax'
+                    })
+                }
+                ,
+                get_contacts: function () {
+                    var contacts = {{ contacts| safe}};
+                    if (contacts) {
+                        for (let i = 0; i < contacts.length; i++) {
+                            contact_handler.add_contact(contacts[i]);
+                        }
+                    }
+                }
+            };
+            
+
+            var click_handler = {
+            on_contact_button: function () {
+                $('#send-contact-button').click(function () {
+                    $.when(contact_handler.check_contact($('#contact-input')).done(function (data) {
+                        if (data == 'true') {
+                            contact_handler.add_contact($('#contact-input').val());
+                        }
+                        else alert(`${$('#contact-input').val()} does not exist`);
+                        $('#contact-input').val('');
+                    }))
+
+                })
+            }
+            ,
+            on_send_button: function () {
+                $('#send-button').click(function () {
+                    if (to_username != "") {
+                        var message = $('#message-input').val();
+                        $('#message-input').val('');
+                        socket_handler.send_message(message, to_username);
+                        message_handler.show_message(message, 0);
+                    }
+                });
+            },
+            on_chat_window: function(){
+                $('#chat-window').click(function(){
+                    let element = document.querySelector('#main');
+                    element.scrollBy({
+                        left:element.scrollWidth,
+                        behavior:'smooth'
+                    });
+                });
+            },
+            on_contact_window: function(){
+                $('#contact-window').click(function(){
+                    let element = document.querySelector('#main');
+                    element.scrollBy({
+                        left:-element.scrollWidth,
+                        behavior:'smooth'
+                    });
+                });
+            }
+        }
+
+        var socket_handler = {
+            initial_connect: function () {
+                private_socket.on('check', function (msg) {
+                    //alert(msg);
+                })
+            }
+            ,
+            send_message: function (msg, username) {
+                private_socket.emit('private_message', { 'username': username, 'message': msg });
+            }
+            ,
+            get_message: function () {
+                private_socket.on('msg', function (msg) {
+                    console.log('message recieved', msg);
+                    if (msg['username'] == to_username) {
+                        message_handler.show_message(msg['message'], 1);
+                    }
+                    else {
+                        let contact = $(`.contact:contains(${msg['username']})`);
+                        contact.append('<div class="contact-msg"></div>');
+                    }
+                })
+            }
+
+        }
+
+        function main() {
+            socket_handler.initial_connect();
+            click_handler.on_contact_button();
+            socket_handler.get_message();
+            click_handler.on_send_button();
+            click_handler.on_chat_window();
+            click_handler.on_contact_window();
+            contact_handler.get_contacts();
+
+
+        }
+        main();
+        })
+
+
+
+    </script>
+</body>
+
+</html>
